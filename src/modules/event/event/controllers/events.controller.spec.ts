@@ -3,7 +3,6 @@ import { EventsController } from './events.controller';
 import { EventsService } from '../services/events.service';
 import { CreateEventDto } from '../dtos/create-event.dto';
 import { QueryEventsDto } from '../dtos/query-events.dto';
-import { EventResponseDto } from '../dtos/event-response.dto';
 import { EventsQueryResponseDto } from '../dtos/event-response.dto';
 import { OccupancyReportResponseDto } from '../dtos/event-response.dto';
 
@@ -118,7 +117,8 @@ describe('EventsController', () => {
       const mockReport: OccupancyReportResponseDto = {
         totalRooms: 2,
         totalEvents: 3,
-        totalActiveEvents: 2,
+        activeEvents: 2,
+        currentlyActiveEvents: 1,
         rooms: [
           {
             roomId: 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab',
@@ -142,4 +142,4 @@ describe('EventsController', () => {
       expect(result).toEqual(mockReport);
     });
   });
-}); 
+});

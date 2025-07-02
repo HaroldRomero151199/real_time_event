@@ -3,28 +3,21 @@
 // Uses roomId (UUID) to reference Room entities
 
 import { Injectable, Inject } from '@nestjs/common';
-import { Event } from '../entities/event.model';
-import { IEventRepository } from '../repositories/event-repository.interface';
-import { EVENT_REPOSITORY } from '../tokens';
 import { CreateEventDto } from '../dtos/create-event.dto';
 import { QueryEventsDto } from '../dtos/query-events.dto';
-import {
-  EventOverlapException,
-  EventAlreadyExistsException,
-  InvalidTimeRangeException,
-  EventNotFoundException,
-} from '../exceptions/event-exceptions';
+import { Event } from '../entities/event.entity';
+import { IEventRepository } from '../repositories/event-repository.interface';
+import { EVENT_REPOSITORY } from '../tokens';
 import {
   OccupancyReportResponseDto,
-  OccupancyReportDto,
+  RoomOccupancyDto,
 } from '../dtos/event-response.dto';
-
-interface RoomData {
-  id: string;
-  name: string;
-  capacity?: number;
-  isActive: boolean;
-}
+import {
+  EventOverlapException,
+  InvalidTimeRangeException,
+  EventNotFoundException,
+  PastEventException,
+} from '../exceptions/event-exceptions';
 
 @Injectable()
 export class EventsService {
@@ -34,53 +27,42 @@ export class EventsService {
   ) {}
 
   async createEvent(createEventDto: CreateEventDto): Promise<Event> {
-    // Validate time range
-    if (createEventDto.startTime >= createEventDto.endTime) {
-      throw new InvalidTimeRangeException(
-        createEventDto.startTime,
-        createEventDto.endTime,
-      );
+    const startTime = new Date(createEventDto.startTime);
+    const endTime = new Date(createEventDto.endTime);
+
+    // Basic validation
+    if (startTime >= endTime) {
+      throw new InvalidTimeRangeException(startTime, endTime);
     }
 
-    // Validate that start time is not in the past (optional business rule)
     const now = new Date();
-    if (createEventDto.startTime < now) {
-      throw new InvalidTimeRangeException(
-        createEventDto.startTime,
-        createEventDto.endTime,
+    if (startTime < now) {
+      throw new PastEventException(
+        startTime,
+        'Events cannot be scheduled in the past',
       );
     }
 
-    // Check if event with same name already exists
-    const existingEvent = await this.eventRepository.findByName(
-      createEventDto.name,
-    );
-    if (existingEvent) {
-      throw new EventAlreadyExistsException(createEventDto.name);
-    }
-
-    // Check for overlapping events in the same room (using roomId)
+    // Check for overlapping events in the same room
     const overlappingEvents = await this.eventRepository.findOverlappingEvents(
       createEventDto.roomId,
-      createEventDto.startTime,
-      createEventDto.endTime,
+      startTime,
+      endTime,
     );
 
     if (overlappingEvents.length > 0) {
       throw new EventOverlapException(
-        createEventDto.name,
-        createEventDto.roomId,
-        createEventDto.startTime,
-        createEventDto.endTime,
+        startTime,
+        'Event overlaps with existing events',
       );
     }
 
     // Create new event
     const event = new Event();
     event.name = createEventDto.name.trim();
-    event.roomId = createEventDto.roomId; // Use roomId (UUID)
-    event.startTime = new Date(createEventDto.startTime);
-    event.endTime = new Date(createEventDto.endTime);
+    event.roomId = createEventDto.roomId;
+    event.startTime = startTime;
+    event.endTime = endTime;
     event.isActive = true;
     event.createdAt = new Date();
     event.updatedAt = new Date();
@@ -89,17 +71,16 @@ export class EventsService {
   }
 
   async queryEvents(queryDto: QueryEventsDto): Promise<Event[]> {
-    // Validate time range
-    if (queryDto.startTime >= queryDto.endTime) {
-      throw new InvalidTimeRangeException(queryDto.startTime, queryDto.endTime);
+    const startTime = new Date(queryDto.startTime);
+    const endTime = new Date(queryDto.endTime);
+
+    if (startTime >= endTime) {
+      throw new InvalidTimeRangeException(startTime, endTime);
     }
 
-    // Find all active events that overlap with the query time range
-    const allEvents = await this.eventRepository.findAll();
-    return allEvents.filter(
-      (event) =>
-        event.isActive &&
-        event.isActiveInTimeRange(queryDto.startTime, queryDto.endTime),
+    const events = await this.eventRepository.findAll();
+    return events.filter((event) =>
+      event.isActiveInTimeRange(startTime, endTime),
     );
   }
 
@@ -131,42 +112,30 @@ export class EventsService {
     });
 
     // Create room reports
-    const roomReports: OccupancyReportDto[] = [];
+    const rooms: RoomOccupancyDto[] = [];
     let totalEvents = 0;
     let totalActiveEvents = 0;
+    let totalCurrentlyActive = 0;
 
     eventsByRoom.forEach((events, roomId) => {
       const activeEvents = events.filter((event) => event.isActive);
       const currentlyActiveEvents = events.filter((event) =>
-        event.isCurrentlyActive(),
+        event.isCurrentlyActive ? event.isCurrentlyActive() : false,
       );
 
-      // Get room name from first event's room relation
-      const firstEvent = events[0];
-      const roomName = firstEvent?.room && typeof firstEvent.room === 'object' && 'name' in firstEvent.room 
-        ? (firstEvent.room as RoomData).name 
-        : `Room ${roomId}`;
-
-      roomReports.push({
+      rooms.push({
         roomId,
-        roomName,
+        roomName: `Room ${roomId}`,
         events: events.map((event) => ({
           id: event.id,
           name: event.name,
           roomId: event.roomId,
-          room: event.room && typeof event.room === 'object'
-            ? {
-                id: (event.room as RoomData).id,
-                name: (event.room as RoomData).name,
-                capacity: (event.room as RoomData).capacity,
-                isActive: (event.room as RoomData).isActive,
-              }
-            : undefined,
-          startTime: event.startTime,
-          endTime: event.endTime,
+          room: undefined,
+          startTime: event.startTime.toISOString(),
+          endTime: event.endTime.toISOString(),
           isActive: event.isActive,
-          createdAt: event.createdAt,
-          updatedAt: event.updatedAt,
+          createdAt: event.createdAt.toISOString(),
+          updatedAt: event.updatedAt.toISOString(),
         })),
         totalEvents: events.length,
         activeEvents: activeEvents.length,
@@ -175,34 +144,28 @@ export class EventsService {
 
       totalEvents += events.length;
       totalActiveEvents += activeEvents.length;
+      totalCurrentlyActive += currentlyActiveEvents.length;
     });
 
     return {
-      rooms: roomReports,
+      rooms,
       totalRooms: eventsByRoom.size,
       totalEvents,
-      totalActiveEvents,
-      generatedAt: new Date(),
+      activeEvents: totalActiveEvents,
+      currentlyActiveEvents: totalCurrentlyActive,
+      generatedAt: new Date().toISOString(),
     };
   }
 
-  // Additional helper methods for extensibility
-
   async getCurrentlyActiveEvents(): Promise<Event[]> {
     const allEvents = await this.eventRepository.findAll();
-    return allEvents.filter((event) => event.isCurrentlyActive());
-  }
-
-  async getUpcomingEvents(hours: number = 24): Promise<Event[]> {
-    const now = new Date();
-    const futureTime = new Date(now.getTime() + hours * 60 * 60 * 1000);
-
-    const allEvents = await this.eventRepository.findAll();
-    return allEvents.filter(
-      (event) =>
-        event.isActive &&
-        event.startTime >= now &&
-        event.startTime <= futureTime,
-    );
+    return allEvents.filter((event) => {
+      if (!event.isActive) {
+        return false;
+      }
+      // Check if event is currently happening (between start and end time)
+      const now = new Date();
+      return event.startTime <= now && event.endTime > now;
+    });
   }
 }

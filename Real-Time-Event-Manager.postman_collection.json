@@ -1,0 +1,412 @@
+{
+  "info": {
+    "name": "Real-Time Event Manager API",
+    "description": "Comprehensive API collection for testing the Real-Time Event Manager system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "room1_id",
+      "value": "b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab",
+      "type": "string"
+    },
+    {
+      "key": "room2_id",
+      "value": "c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc",
+      "type": "string"
+    },
+    {
+      "key": "room3_id",
+      "value": "d9a8c3a4-3e4f-4a5c-9a3c-3456789012cd",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Documentation",
+      "item": [
+        {
+          "name": "Swagger UI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api",
+              "host": ["{{baseUrl}}"],
+              "path": ["api"]
+            },
+            "description": "Access the interactive Swagger documentation"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "Create Event - Room 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tech Conference 2025\",\n  \"roomId\": \"{{room1_id}}\",\n  \"startTime\": \"2025-07-03T10:00:00Z\",\n  \"endTime\": \"2025-07-03T12:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events"]
+            },
+            "description": "Create a new event in Room 1"
+          }
+        },
+        {
+          "name": "Create Event - Room 2 (Different Time)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Marketing Workshop\",\n  \"roomId\": \"{{room2_id}}\",\n  \"startTime\": \"2025-07-03T14:00:00Z\",\n  \"endTime\": \"2025-07-03T16:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events"]
+            },
+            "description": "Create a new event in Room 2 at a different time"
+          }
+        },
+        {
+          "name": "Create Event - Same Room, Overlapping (Should Fail)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Overlapping Event\",\n  \"roomId\": \"{{room1_id}}\",\n  \"startTime\": \"2025-07-03T11:00:00Z\",\n  \"endTime\": \"2025-07-03T13:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events"]
+            },
+            "description": "Try to create an overlapping event (should return 409 Conflict)"
+          }
+        },
+        {
+          "name": "Create Event - Invalid Time Range (Should Fail)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Invalid Time Event\",\n  \"roomId\": \"{{room1_id}}\",\n  \"startTime\": \"2025-07-03T15:00:00Z\",\n  \"endTime\": \"2025-07-03T14:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events"]
+            },
+            "description": "Try to create an event with end time before start time (should return 400 Bad Request)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Queries",
+      "item": [
+        {
+          "name": "Query Events - Morning Range",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/events/query?startTime=2025-07-03T09:00:00Z&endTime=2025-07-03T13:00:00Z",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events", "query"],
+              "query": [
+                {
+                  "key": "startTime",
+                  "value": "2025-07-03T09:00:00Z"
+                },
+                {
+                  "key": "endTime",
+                  "value": "2025-07-03T13:00:00Z"
+                }
+              ]
+            },
+            "description": "Query events in the morning time range"
+          }
+        },
+        {
+          "name": "Query Events - Afternoon Range",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/events/query?startTime=2025-07-03T13:00:00Z&endTime=2025-07-03T17:00:00Z",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events", "query"],
+              "query": [
+                {
+                  "key": "startTime",
+                  "value": "2025-07-03T13:00:00Z"
+                },
+                {
+                  "key": "endTime",
+                  "value": "2025-07-03T17:00:00Z"
+                }
+              ]
+            },
+            "description": "Query events in the afternoon time range"
+          }
+        },
+        {
+          "name": "Query Events - Full Day",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/events/query?startTime=2025-07-03T00:00:00Z&endTime=2025-07-03T23:59:59Z",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events", "query"],
+              "query": [
+                {
+                  "key": "startTime",
+                  "value": "2025-07-03T00:00:00Z"
+                },
+                {
+                  "key": "endTime",
+                  "value": "2025-07-03T23:59:59Z"
+                }
+              ]
+            },
+            "description": "Query all events for the full day"
+          }
+        },
+        {
+          "name": "Currently Active Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/events/currently-active",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events", "currently-active"]
+            },
+            "description": "Get events that are currently happening"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Event Management",
+      "item": [
+        {
+          "name": "Cancel Event - Tech Conference",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/events/Tech Conference 2025/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events", "Tech Conference 2025", "cancel"]
+            },
+            "description": "Cancel the Tech Conference event"
+          }
+        },
+        {
+          "name": "Cancel Event - Marketing Workshop",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/events/Marketing Workshop/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events", "Marketing Workshop", "cancel"]
+            },
+            "description": "Cancel the Marketing Workshop event"
+          }
+        },
+        {
+          "name": "Cancel Non-Existent Event (Should Fail)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/events/Non Existent Event/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events", "Non Existent Event", "cancel"]
+            },
+            "description": "Try to cancel a non-existent event (should return 404 Not Found)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Occupancy Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/events/occupancy-report",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events", "occupancy-report"]
+            },
+            "description": "Generate a comprehensive occupancy report showing all rooms and their events"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Test Scenarios",
+      "item": [
+        {
+          "name": "Scenario 1: Create Event A",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Event A\",\n  \"roomId\": \"{{room1_id}}\",\n  \"startTime\": \"2025-07-03T09:00:00Z\",\n  \"endTime\": \"2025-07-03T11:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events"]
+            },
+            "description": "Example scenario: Event A in Room 1, 09:00-11:00"
+          }
+        },
+        {
+          "name": "Scenario 2: Try Event B (Should Fail)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Event B\",\n  \"roomId\": \"{{room1_id}}\",\n  \"startTime\": \"2025-07-03T10:30:00Z\",\n  \"endTime\": \"2025-07-03T12:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events"]
+            },
+            "description": "Example scenario: Event B in Room 1, 10:30-12:00 (should fail due to overlap)"
+          }
+        },
+        {
+          "name": "Scenario 3: Create Event C",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Event C\",\n  \"roomId\": \"{{room2_id}}\",\n  \"startTime\": \"2025-07-03T10:00:00Z\",\n  \"endTime\": \"2025-07-03T11:30:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events"]
+            },
+            "description": "Example scenario: Event C in Room 2, 10:00-11:30 (should succeed - different room)"
+          }
+        },
+        {
+          "name": "Scenario 4: Query Active Events (10:00-10:45)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/events/query?startTime=2025-07-03T10:00:00Z&endTime=2025-07-03T10:45:00Z",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events", "query"],
+              "query": [
+                {
+                  "key": "startTime",
+                  "value": "2025-07-03T10:00:00Z"
+                },
+                {
+                  "key": "endTime",
+                  "value": "2025-07-03T10:45:00Z"
+                }
+              ]
+            },
+            "description": "Example scenario: Query active events between 10:00 and 10:45"
+          }
+        },
+        {
+          "name": "Scenario 5: Cancel Event A",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/events/Event A/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events", "Event A", "cancel"]
+            },
+            "description": "Example scenario: Cancel Event A"
+          }
+        },
+        {
+          "name": "Scenario 6: Generate Final Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v1/events/occupancy-report",
+              "host": ["{{baseUrl}}"],
+              "path": ["v1", "events", "occupancy-report"]
+            },
+            "description": "Example scenario: Generate occupancy report"
+          }
+        }
+      ]
+    }
+  ]
+} 

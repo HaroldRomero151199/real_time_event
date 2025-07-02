@@ -33,11 +33,11 @@ describe('EventsController (e2e)', () => {
   describe('/v1/events (POST)', () => {
     it('should create a new event successfully', () => {
       const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
-      const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
-      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
       const baseDate = new Date('2025-07-03T09:00:00Z');
       const isoStart = baseDate.toISOString();
-      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+      const isoEnd = new Date(
+        baseDate.getTime() + 2 * 60 * 60 * 1000,
+      ).toISOString();
 
       const createEventDto = {
         name: 'Tech Conference 2024',
@@ -51,9 +51,13 @@ describe('EventsController (e2e)', () => {
         .send(createEventDto)
         .expect(201)
         .expect((res) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(res.body.name).toBe('Tech Conference 2024');
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(res.body.roomId).toBe(validRoomId);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(res.body.isActive).toBe(true);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(res.body.id).toBeDefined();
         });
     });
@@ -61,10 +65,11 @@ describe('EventsController (e2e)', () => {
     it('should reject overlapping events in the same room', async () => {
       const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
       const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
-      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
       const baseDate = new Date('2025-07-03T09:00:00Z');
       const isoStart = baseDate.toISOString();
-      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+      const isoEnd = new Date(
+        baseDate.getTime() + 2 * 60 * 60 * 1000,
+      ).toISOString();
 
       const event1 = {
         name: 'Overlap Test Event 1',
@@ -92,6 +97,7 @@ describe('EventsController (e2e)', () => {
         .send(event2)
         .expect(409)
         .expect((res) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(res.body.message).toContain('overlaps');
         });
     });
@@ -99,10 +105,11 @@ describe('EventsController (e2e)', () => {
     it('should allow overlapping events in different rooms', async () => {
       const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
       const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
-      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
       const baseDate = new Date('2025-07-03T09:00:00Z');
       const isoStart = baseDate.toISOString();
-      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+      const isoEnd = new Date(
+        baseDate.getTime() + 2 * 60 * 60 * 1000,
+      ).toISOString();
 
       const event1 = {
         name: 'Different Room Event 1',
@@ -133,11 +140,11 @@ describe('EventsController (e2e)', () => {
 
     it('should reject events with invalid time range', () => {
       const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
-      const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
-      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
       const baseDate = new Date('2025-07-03T09:00:00Z');
       const isoStart = baseDate.toISOString();
-      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+      const isoEnd = new Date(
+        baseDate.getTime() + 2 * 60 * 60 * 1000,
+      ).toISOString();
 
       const invalidEvent = {
         name: 'Invalid Time Range Event',
@@ -158,10 +165,11 @@ describe('EventsController (e2e)', () => {
       // Create test events
       const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
       const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
-      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
       const baseDate = new Date('2025-07-03T09:00:00Z');
       const isoStart = baseDate.toISOString();
-      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+      const isoEnd = new Date(
+        baseDate.getTime() + 2 * 60 * 60 * 1000,
+      ).toISOString();
 
       const events = [
         {
@@ -195,9 +203,13 @@ describe('EventsController (e2e)', () => {
         })
         .expect(200)
         .expect((res) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(res.body.events).toHaveLength(2);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(res.body.total).toBe(2);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(res.body.queryStartTime).toBe('2024-01-15T10:00:00.000Z');
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(res.body.queryEndTime).toBe('2024-01-15T10:45:00.000Z');
         });
     });
@@ -211,7 +223,9 @@ describe('EventsController (e2e)', () => {
         })
         .expect(200)
         .expect((res) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(res.body.events).toHaveLength(0);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expect(res.body.total).toBe(0);
         });
     });
@@ -222,11 +236,11 @@ describe('EventsController (e2e)', () => {
 
     beforeEach(async () => {
       const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
-      const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
-      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
       const baseDate = new Date('2025-07-03T09:00:00Z');
       const isoStart = baseDate.toISOString();
-      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+      const isoEnd = new Date(
+        baseDate.getTime() + 2 * 60 * 60 * 1000,
+      ).toISOString();
 
       const event = {
         name: 'Event to Cancel',
@@ -265,10 +279,11 @@ describe('EventsController (e2e)', () => {
       // Create test events in different rooms
       const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
       const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
-      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
       const baseDate = new Date('2025-07-03T09:00:00Z');
       const isoStart = baseDate.toISOString();
-      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+      const isoEnd = new Date(
+        baseDate.getTime() + 2 * 60 * 60 * 1000,
+      ).toISOString();
 
       const events = [
         {

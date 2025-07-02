@@ -115,81 +115,51 @@ export class EventsQueryResponseDto {
     description: 'Start time of the query range',
     example: '2024-01-15T10:00:00Z',
   })
-  queryStartTime: Date;
+  queryStartTime: string;
 
   @ApiProperty({
     description: 'End time of the query range',
     example: '2024-01-15T10:45:00Z',
   })
-  queryEndTime: Date;
+  queryEndTime: string;
 }
 
-export class OccupancyReportDto {
-  @ApiProperty({
-    description: 'UUID of the room',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
+export class RoomOccupancyDto {
+  @ApiProperty()
   roomId: string;
 
-  @ApiProperty({
-    description: 'Name of the room',
-    example: 'Room 1',
-  })
+  @ApiProperty()
   roomName: string;
 
-  @ApiProperty({
-    description: 'Events in this room',
-    type: [EventResponseDto],
-  })
+  @ApiProperty({ type: [EventResponseDto] })
   events: EventResponseDto[];
 
-  @ApiProperty({
-    description: 'Total number of events in this room',
-    example: 5,
-  })
+  @ApiProperty()
   totalEvents: number;
 
-  @ApiProperty({
-    description: 'Number of active events in this room',
-    example: 3,
-  })
+  @ApiProperty()
   activeEvents: number;
 
-  @ApiProperty({
-    description: 'Number of currently active events in this room',
-    example: 1,
-  })
+  @ApiProperty()
   currentlyActiveEvents: number;
 }
 
 export class OccupancyReportResponseDto {
-  @ApiProperty({
-    description: 'List of room occupancy reports',
-    type: [OccupancyReportDto],
-  })
-  rooms: OccupancyReportDto[];
+  @ApiProperty({ type: [RoomOccupancyDto] })
+  rooms: RoomOccupancyDto[];
 
-  @ApiProperty({
-    description: 'Total number of rooms',
-    example: 3,
-  })
+  @ApiProperty()
   totalRooms: number;
 
-  @ApiProperty({
-    description: 'Total number of events',
-    example: 15,
-  })
+  @ApiProperty()
   totalEvents: number;
 
-  @ApiProperty({
-    description: 'Total number of active events',
-    example: 12,
-  })
-  totalActiveEvents: number;
+  @ApiProperty()
+  activeEvents: number;
 
-  @ApiProperty({
-    description: 'When the report was generated',
-    example: '2024-01-15T12:00:00Z',
-  })
-  generatedAt: Date;
+  @ApiProperty()
+  currentlyActiveEvents: number;
+
+  @ApiProperty({ type: String })
+  generatedAt: string;
 }

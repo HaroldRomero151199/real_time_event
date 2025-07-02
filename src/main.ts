@@ -11,6 +11,20 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
+  // STRATEGY 1: Keep current working setup (Recommended)
+  // No global prefix - routes work as /v1/events
+
+  // STRATEGY 2: Alternative with global prefix (for future)
+  // app.setGlobalPrefix('api/v1');
+
+  // STRATEGY 3: Advanced Versioning (Alternative - commented out)
+  // app.setGlobalPrefix('api');
+  // app.enableVersioning({
+  //   type: VersioningType.URI,
+  //   defaultVersion: '1',
+  //   prefix: 'v',
+  // });
+
   // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
@@ -43,16 +57,25 @@ async function bootstrap() {
       .setTitle(swaggerConfig.title)
       .setDescription(swaggerConfig.description)
       .setVersion(swaggerConfig.version)
-      .addTag('Events Management')
-      .addServer(`http://localhost:${appConfig.port}`, 'Development server')
-      .addServer(`http://localhost:${appConfig.port}`, 'Staging server')
-      .addServer('https://api.events.com', 'Production server')
+      .addTag('Events Management', 'Event lifecycle operations')
+      .addTag('Reports', 'Analytics and reporting endpoints')
+      .addServer(
+        `http://localhost:${appConfig.port}/v1`,
+        'Development API v1',
+      )
+      .addServer(
+        `http://localhost:${appConfig.port}/v2`,
+        'Development API v2 (Future)',
+      )
+      .addServer('https://api.events.com/v1', 'Production API v1')
       .build();
 
-    const document = SwaggerModule.createDocument(app, config);
+        const document = SwaggerModule.createDocument(app, config);
+
     SwaggerModule.setup(swaggerConfig.path, app, document, {
       swaggerOptions: {
         persistAuthorization: true,
+        displayRequestDuration: true,
       },
     });
   }
@@ -67,6 +90,7 @@ async function bootstrap() {
     `🚀 Application is running on: http://localhost:${appConfig.port}`,
   );
   console.log(`🌍 Environment: ${appConfig.environment}`);
+  console.log(`📡 API Base URL: http://localhost:${appConfig.port}/api/v1`);
 
   if (swaggerConfig.enabled) {
     console.log(

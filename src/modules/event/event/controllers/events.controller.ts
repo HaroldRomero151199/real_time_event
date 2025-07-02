@@ -58,7 +58,7 @@ interface RoomData {
 }
 
 @ApiTags('Events Management')
-@Controller('v1/events')
+@Controller('events') // With global prefix: /api/v1/events
 @UsePipes(new ValidationPipe({ transform: true }))
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
@@ -256,10 +256,22 @@ export class EventsController {
       id: event.id,
       name: event.name,
       roomId: event.roomId,
-      startTime: event.startTime instanceof Date ? event.startTime.toISOString() : event.startTime,
-      endTime: event.endTime instanceof Date ? event.endTime.toISOString() : event.endTime,
-      createdAt: event.createdAt instanceof Date ? event.createdAt.toISOString() : event.createdAt,
-      updatedAt: event.updatedAt instanceof Date ? event.updatedAt.toISOString() : event.updatedAt,
+      startTime:
+        event.startTime instanceof Date
+          ? event.startTime.toISOString()
+          : event.startTime,
+      endTime:
+        event.endTime instanceof Date
+          ? event.endTime.toISOString()
+          : event.endTime,
+      createdAt:
+        event.createdAt instanceof Date
+          ? event.createdAt.toISOString()
+          : event.createdAt,
+      updatedAt:
+        event.updatedAt instanceof Date
+          ? event.updatedAt.toISOString()
+          : event.updatedAt,
       isActive: event.isActive,
       room: event.room,
       durationInMinutes: event.getDurationInMinutes

@@ -1,0 +1,41 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Interview Coding Problem 
+PROBLEM: REAL-TIME EVENT MANAGER 
+INSTRUCTIONS: 
+The goal of this exercise is to evaluate your ability to design, implement, and document a 
+software solution. Code clarity, design quality, and justification of your decisions will be 
+taken into account. 
+EXPECTED SOLUTION: 
+Upload your solution to a GitHub repository. Include a README file where you briefly 
+explain your approach and the design decisions you made. 
+PROBLEM: 
+A company organizes events in different rooms of a convention center. Each room can host 
+only one event at a time, but events may overlap in time if they are in different rooms. 
+Events have a name, an assigned room, a start time, and an end time. 
+You are required to build a system that allows: 
+● Registering new events, ensuring there are no overlaps in the same room. 
+● Querying which events are active within a given time range (in any room). 
+● Canceling an event by its name. 
+REQUIREMENTS: 
+● The system must be extensible to support new features in the future. 
+● It must handle edge cases correctly, such as events that start or end exactly at the 
+same time. 
+● The system must be efficient enough to handle hundreds of events and dozens of 
+rooms. 
+● Include unit tests for the main scenarios and at least one edge case. 
+● Justify your choice of data structures and design patterns in the README. 
+INPUT AND OUTPUT: 
+You can define the input and output format yourself, but you must justify your choice in 
+the README. You may use files, the console, or a simple API. 
+EXAMPLE SCENARIO: 
+Suppose you have 3 rooms and attempt to register the following events: 
+● Event A: Room 1, 09:00–11:00 
+● Event B: Room 1, 10:30–12:00 (should be rejected due to overlap) 
+● Event C: Room 2, 10:00–11:30 
+Query the active events between 10:00 and 10:45, cancel Event A, and generate the 
+
+occupancy report.

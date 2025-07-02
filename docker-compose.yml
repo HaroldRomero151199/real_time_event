@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: real_time_event_db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-events_db}
+      POSTGRES_USER: ${DB_USERNAME:-events_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-events_password}
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - events_network
+
+  # NestJS Application
+  app:
+    build: .
+    container_name: real_time_event_app
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: ${PORT:-3000}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      JWT_SECRET: ${JWT_SECRET:-dev-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
+    ports:
+      - "${PORT:-3000}:3000"
+    depends_on:
+      - postgres
+    networks:
+      - events_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  events_network:
+    driver: bridge 

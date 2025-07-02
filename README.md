@@ -21,67 +21,349 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+# Real-Time Event Manager API
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+A comprehensive API for managing events in a convention center built with NestJS, Prisma, and PostgreSQL.
 
-## Project setup
+## 🚀 Features
 
-```bash
-$ npm install
+- **Event Management**: Create, query, and cancel events
+- **Room Management**: Manage different rooms in the convention center
+- **Overlap Prevention**: Ensure no overlapping events in the same room
+- **Real-time Queries**: Find active events within time ranges
+- **Occupancy Reports**: Generate comprehensive room occupancy reports
+- **Docker Support**: Full containerization with PostgreSQL
+- **API Documentation**: Swagger/OpenAPI documentation
+
+## 🏗️ Architecture
+
+```
+src/modules/event/
+├── event/                    # Event management module
+│   ├── controllers/         # HTTP controllers
+│   ├── services/           # Business logic
+│   ├── repositories/       # Data access layer (Prisma)
+│   ├── entities/           # Data models
+│   ├── dtos/              # Data Transfer Objects
+│   ├── exceptions/        # Custom exceptions
+│   ├── validators/        # Validation logic
+│   ├── middlewares/       # Request processing
+│   └── prisma/           # Prisma service
+├── room/                   # Room management module
+└── event.module.ts        # Main module
 ```
 
-## Compile and run the project
+## 🛠️ Tech Stack
 
+- **Backend**: NestJS (Node.js framework)
+- **Database**: PostgreSQL with Prisma ORM
+- **Containerization**: Docker & Docker Compose
+- **Documentation**: Swagger/OpenAPI
+- **Validation**: class-validator & class-transformer
+- **Testing**: Jest
+
+## 📋 Prerequisites
+
+- Node.js 18+
+- Docker & Docker Compose
+- npm or yarn
+
+## 🌍 Environment Configuration
+
+The application supports multiple environments: **development**, **staging**, and **production**. Each environment has its own configuration file and Docker setup.
+
+### Environment Files
+- `env.development` - Development environment configuration
+- `env.staging` - Staging environment configuration  
+- `env.production` - Production environment configuration
+
+### Quick Environment Setup
+
+#### Using Scripts (Recommended)
 ```bash
-# development
-$ npm run start
+# Windows PowerShell
+.\scripts\setup-env.ps1 dev
+.\scripts\setup-env.ps1 staging
+.\scripts\setup-env.ps1 prod
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+# Linux/Mac
+chmod +x scripts/setup-env.sh
+./scripts/setup-env.sh dev
+./scripts/setup-env.sh staging
+./scripts/setup-env.sh prod
 ```
 
-## Run tests
-
+#### Using npm scripts
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run env:dev      # Setup development environment
+npm run env:staging  # Setup staging environment
+npm run env:prod     # Setup production environment
 ```
 
-## Deployment
+### Environment-Specific Commands
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+#### Development
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run start:dev        # Start with hot reload
+npm run docker:up:dev    # Start with Docker (hot reload)
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+#### Staging
+```bash
+npm run start:staging    # Start staging server
+npm run docker:up:staging # Start with Docker
+```
 
-## Resources
+#### Production
+```bash
+npm run start:prod       # Start production server
+npm run docker:up:prod   # Start with Docker
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+## 🚀 Quick Start
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### 1. Clone the repository
+```bash
+git clone <repository-url>
+cd real_time_event
+```
+
+### 2. Install dependencies
+```bash
+npm install
+```
+
+### 3. Set up environment
+```bash
+# Setup development environment
+npm run env:dev
+```
+
+### 4. Start the database and run migrations
+```bash
+# For Windows
+npm run setup:dev
+
+# For Linux/Mac
+chmod +x scripts/dev-setup.sh
+./scripts/dev-setup.sh
+```
+
+### 5. Start the development server
+```bash
+npm run start:dev
+```
+
+The API will be available at `http://localhost:3000`
+Swagger documentation at `http://localhost:3000/api`
+
+## 🐳 Docker Setup
+
+### Environment-Specific Docker Commands
+
+#### Development (with hot reload)
+```bash
+npm run docker:up:dev    # Start development environment
+npm run docker:logs      # View logs
+npm run docker:down      # Stop services
+```
+
+#### Staging
+```bash
+npm run docker:up:staging # Start staging environment
+npm run docker:logs       # View logs
+npm run docker:down       # Stop services
+```
+
+#### Production
+```bash
+npm run docker:up:prod    # Start production environment
+npm run docker:logs       # View logs
+npm run docker:down       # Stop services
+```
+
+### Ports by Environment
+- **Development**: App on port 3000, DB on port 5433
+- **Staging**: App on port 3001, DB on port 5434
+- **Production**: App on port 3002, DB on port 5435
+
+### General Docker Commands
+```bash
+npm run docker:up         # Start default environment
+npm run docker:logs       # View logs
+npm run docker:down       # Stop all services
+```
+
+## 📊 Database Management
+
+### Generate Prisma client
+```bash
+npm run db:generate
+```
+
+### Run migrations
+```bash
+npm run db:migrate
+```
+
+### Open Prisma Studio (Database GUI)
+```bash
+npm run db:studio
+```
+
+### Reset database
+```bash
+npm run db:reset
+```
+
+## 🧪 Testing
+
+### Run tests
+```bash
+npm run test
+```
+
+### Run tests in watch mode
+```bash
+npm run test:watch
+```
+
+### Run e2e tests
+```bash
+npm run test:e2e
+```
+
+## 📚 API Endpoints
+
+### Events
+- `POST /v1/events` - Create a new event
+- `GET /v1/events/query` - Query active events in time range
+- `POST /v1/events/:name/cancel` - Cancel an event
+- `GET /v1/events/occupancy-report` - Generate occupancy report
+
+### Example Usage
+
+#### Create Event
+```bash
+curl -X POST http://localhost:3000/v1/events \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Tech Conference 2024",
+    "room": "Room 1",
+    "startTime": "2024-01-15T09:00:00Z",
+    "endTime": "2024-01-15T11:00:00Z"
+  }'
+```
+
+#### Query Events
+```bash
+curl "http://localhost:3000/v1/events/query?startTime=2024-01-15T10:00:00Z&endTime=2024-01-15T10:45:00Z"
+```
+
+## 🔧 Development
+
+### Project Structure
+- **Modular Architecture**: Each feature has its own module
+- **Repository Pattern**: Clean separation of data access
+- **DTO Validation**: Input/output validation with decorators
+- **Exception Handling**: Custom exceptions for business logic
+- **Middleware Support**: Request processing and validation
+
+### Code Quality
+```bash
+# Format code
+npm run format
+
+# Lint code
+npm run lint
+```
+
+## 📝 Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://events_user:events_password@localhost:5432/events_db` |
+| `NODE_ENV` | Application environment | `development` |
+| `PORT` | Application port | `3000` |
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🧪 Test Coverage
+
+The application includes comprehensive test coverage:
+
+- **Unit Tests**: Test individual use cases and business logic
+- **Integration Tests**: Test repository implementations
+- **E2E Tests**: Test complete API endpoints
+- **Edge Cases**: Test boundary conditions and error scenarios
+
+### Test Structure
+
+```
+src/modules/events/application/use-cases/
+├── create-event.use-case.spec.ts
+├── query-events.use-case.spec.ts
+├── cancel-event.use-case.spec.ts
+└── generate-occupancy-report.use-case.spec.ts
+
+test/
+└── events.e2e-spec.ts
+```
+
+## 🚀 Performance & Scalability
+
+### Current Performance
+
+- **Event Creation**: O(log n) with database indexing
+- **Overlap Detection**: O(1) for single event, O(n) for batch operations
+- **Time Range Queries**: O(log n) with indexed queries
+- **Occupancy Reports**: O(n) where n is total number of events
+
+### Scalability Features
+
+- **Database Indexing**: Optimized queries for large datasets
+- **Connection Pooling**: Efficient database connection management
+- **Modular Architecture**: Easy to add caching, load balancing, etc.
+- **API Versioning**: Backward compatibility for future changes
+
+## 🔮 Future Enhancements
+
+The architecture is designed to be extensible for future features:
+
+- **Real-time Updates**: WebSocket integration for live event updates
+- **Caching Layer**: Redis integration for improved performance
+- **Authentication**: JWT-based authentication and authorization
+- **Audit Logging**: Comprehensive event audit trails
+- **Multi-tenancy**: Support for multiple convention centers
+- **Advanced Scheduling**: Recurring events, conflict resolution
+- **Mobile API**: Optimized endpoints for mobile applications
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
+
+---
+
+**Built with ❤️ using NestJS and TypeScript**
 
 ## Support
 

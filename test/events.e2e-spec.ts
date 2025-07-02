@@ -32,11 +32,18 @@ describe('EventsController (e2e)', () => {
 
   describe('/v1/events (POST)', () => {
     it('should create a new event successfully', () => {
+      const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
+      const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
+      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
+      const baseDate = new Date('2025-07-03T09:00:00Z');
+      const isoStart = baseDate.toISOString();
+      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+
       const createEventDto = {
         name: 'Tech Conference 2024',
-        room: 'Room 1',
-        startTime: '2024-01-15T09:00:00Z',
-        endTime: '2024-01-15T11:00:00Z',
+        roomId: validRoomId,
+        startTime: isoStart,
+        endTime: isoEnd,
       };
 
       return request(app.getHttpServer())
@@ -45,23 +52,30 @@ describe('EventsController (e2e)', () => {
         .expect(201)
         .expect((res) => {
           expect(res.body.name).toBe('Tech Conference 2024');
-          expect(res.body.room).toBe('Room 1');
+          expect(res.body.roomId).toBe(validRoomId);
           expect(res.body.isActive).toBe(true);
           expect(res.body.id).toBeDefined();
         });
     });
 
     it('should reject overlapping events in the same room', async () => {
+      const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
+      const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
+      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
+      const baseDate = new Date('2025-07-03T09:00:00Z');
+      const isoStart = baseDate.toISOString();
+      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+
       const event1 = {
         name: 'Overlap Test Event 1',
-        room: 'Room 1',
-        startTime: '2024-01-15T09:00:00Z',
-        endTime: '2024-01-15T11:00:00Z',
+        roomId: validRoomId,
+        startTime: isoStart,
+        endTime: isoEnd,
       };
 
       const event2 = {
         name: 'Overlap Test Event 2',
-        room: 'Room 1',
+        roomId: validRoomId2,
         startTime: '2024-01-15T10:30:00Z',
         endTime: '2024-01-15T12:00:00Z',
       };
@@ -83,16 +97,23 @@ describe('EventsController (e2e)', () => {
     });
 
     it('should allow overlapping events in different rooms', async () => {
+      const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
+      const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
+      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
+      const baseDate = new Date('2025-07-03T09:00:00Z');
+      const isoStart = baseDate.toISOString();
+      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+
       const event1 = {
         name: 'Different Room Event 1',
-        room: 'Room 1',
-        startTime: '2024-01-15T09:00:00Z',
-        endTime: '2024-01-15T11:00:00Z',
+        roomId: validRoomId,
+        startTime: isoStart,
+        endTime: isoEnd,
       };
 
       const event2 = {
         name: 'Different Room Event 2',
-        room: 'Room 2',
+        roomId: validRoomId2,
         startTime: '2024-01-15T10:30:00Z',
         endTime: '2024-01-15T12:00:00Z',
       };
@@ -111,11 +132,18 @@ describe('EventsController (e2e)', () => {
     });
 
     it('should reject events with invalid time range', () => {
+      const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
+      const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
+      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
+      const baseDate = new Date('2025-07-03T09:00:00Z');
+      const isoStart = baseDate.toISOString();
+      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+
       const invalidEvent = {
         name: 'Invalid Time Range Event',
-        room: 'Room 1',
-        startTime: '2024-01-15T11:00:00Z',
-        endTime: '2024-01-15T09:00:00Z',
+        roomId: validRoomId,
+        startTime: isoEnd,
+        endTime: isoStart,
       };
 
       return request(app.getHttpServer())
@@ -128,16 +156,23 @@ describe('EventsController (e2e)', () => {
   describe('/v1/events/query (GET)', () => {
     beforeEach(async () => {
       // Create test events
+      const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
+      const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
+      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
+      const baseDate = new Date('2025-07-03T09:00:00Z');
+      const isoStart = baseDate.toISOString();
+      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+
       const events = [
         {
           name: 'Query Test Event 1',
-          room: 'Room 1',
-          startTime: '2024-01-15T09:00:00Z',
-          endTime: '2024-01-15T11:00:00Z',
+          roomId: validRoomId,
+          startTime: isoStart,
+          endTime: isoEnd,
         },
         {
           name: 'Query Test Event 2',
-          room: 'Room 2',
+          roomId: validRoomId2,
           startTime: '2024-01-15T10:00:00Z',
           endTime: '2024-01-15T11:30:00Z',
         },
@@ -186,11 +221,18 @@ describe('EventsController (e2e)', () => {
     let eventName: string;
 
     beforeEach(async () => {
+      const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
+      const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
+      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
+      const baseDate = new Date('2025-07-03T09:00:00Z');
+      const isoStart = baseDate.toISOString();
+      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+
       const event = {
         name: 'Event to Cancel',
-        room: 'Room 1',
-        startTime: '2024-01-15T09:00:00Z',
-        endTime: '2024-01-15T11:00:00Z',
+        roomId: validRoomId,
+        startTime: isoStart,
+        endTime: isoEnd,
       };
 
       const response = await request(app.getHttpServer())
@@ -221,22 +263,29 @@ describe('EventsController (e2e)', () => {
   describe('/v1/events/occupancy-report (GET)', () => {
     beforeEach(async () => {
       // Create test events in different rooms
+      const validRoomId = 'b7e6a1e2-1c2d-4e3a-9f1a-1234567890ab';
+      const validRoomId2 = 'c8f7b2f3-2d3e-4f4b-8a2b-2345678901bc';
+      const validRoomId3 = 'd9a8c3a4-3e4f-4a5c-9a3c-3456789012cd';
+      const baseDate = new Date('2025-07-03T09:00:00Z');
+      const isoStart = baseDate.toISOString();
+      const isoEnd = new Date(baseDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+
       const events = [
         {
           name: 'Event A',
-          room: 'Room 1',
-          startTime: '2024-01-15T09:00:00Z',
-          endTime: '2024-01-15T11:00:00Z',
+          roomId: validRoomId,
+          startTime: isoStart,
+          endTime: isoEnd,
         },
         {
           name: 'Event B',
-          room: 'Room 1',
+          roomId: validRoomId,
           startTime: '2024-01-15T12:00:00Z',
           endTime: '2024-01-15T14:00:00Z',
         },
         {
           name: 'Event C',
-          room: 'Room 2',
+          roomId: validRoomId2,
           startTime: '2024-01-15T10:00:00Z',
           endTime: '2024-01-15T11:30:00Z',
         },

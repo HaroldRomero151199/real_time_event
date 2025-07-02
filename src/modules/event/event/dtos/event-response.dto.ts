@@ -1,9 +1,39 @@
+// DTOs for event responses with UUID support and Room relations
+// These DTOs define the structure of API responses for events
+// Include room information and use UUIDs for relationships
+
 import { ApiProperty } from '@nestjs/swagger';
+
+export class RoomResponseDto {
+  @ApiProperty({
+    description: 'UUID of the room',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  id: string;
+
+  @ApiProperty({
+    description: 'Name of the room',
+    example: 'Room 1',
+  })
+  name: string;
+
+  @ApiProperty({
+    description: 'Capacity of the room',
+    example: 100,
+  })
+  capacity?: number;
+
+  @ApiProperty({
+    description: 'Whether the room is active',
+    example: true,
+  })
+  isActive: boolean;
+}
 
 export class EventResponseDto {
   @ApiProperty({
-    description: 'Unique identifier of the event',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'UUID of the event',
+    example: '123e4567-e89b-12d3-a456-426614174001',
   })
   id: string;
 
@@ -14,22 +44,28 @@ export class EventResponseDto {
   name: string;
 
   @ApiProperty({
-    description: 'Room where the event takes place',
-    example: 'Room 1',
+    description: 'UUID of the room where the event takes place',
+    example: '123e4567-e89b-12d3-a456-426614174000',
   })
-  room: string;
+  roomId: string;
+
+  @ApiProperty({
+    description: 'Room information',
+    type: RoomResponseDto,
+  })
+  room?: RoomResponseDto;
 
   @ApiProperty({
     description: 'Start time of the event',
     example: '2024-01-15T09:00:00Z',
   })
-  startTime: Date;
+  startTime: string;
 
   @ApiProperty({
     description: 'End time of the event',
     example: '2024-01-15T11:00:00Z',
   })
-  endTime: Date;
+  endTime: string;
 
   @ApiProperty({
     description: 'Whether the event is active',
@@ -38,39 +74,51 @@ export class EventResponseDto {
   isActive: boolean;
 
   @ApiProperty({
-    description: 'Creation timestamp',
+    description: 'When the event was created',
     example: '2024-01-15T08:00:00Z',
   })
-  createdAt: Date;
+  createdAt: string;
 
   @ApiProperty({
-    description: 'Last update timestamp',
+    description: 'When the event was last updated',
     example: '2024-01-15T08:00:00Z',
   })
-  updatedAt: Date;
+  updatedAt: string;
+
+  @ApiProperty({
+    description: 'Duration of the event in minutes',
+    example: 120,
+  })
+  durationInMinutes?: number;
+
+  @ApiProperty({
+    description: 'Whether the event is currently active',
+    example: true,
+  })
+  isCurrentlyActive?: boolean;
 }
 
 export class EventsQueryResponseDto {
   @ApiProperty({
-    description: 'List of active events in the specified time range',
+    description: 'List of events found',
     type: [EventResponseDto],
   })
   events: EventResponseDto[];
 
   @ApiProperty({
-    description: 'Total count of events found',
+    description: 'Total number of events found',
     example: 5,
   })
   total: number;
 
   @ApiProperty({
-    description: 'Query time range start',
+    description: 'Start time of the query range',
     example: '2024-01-15T10:00:00Z',
   })
   queryStartTime: Date;
 
   @ApiProperty({
-    description: 'Query time range end',
+    description: 'End time of the query range',
     example: '2024-01-15T10:45:00Z',
   })
   queryEndTime: Date;
@@ -78,28 +126,40 @@ export class EventsQueryResponseDto {
 
 export class OccupancyReportDto {
   @ApiProperty({
-    description: 'Room name',
-    example: 'Room 1',
+    description: 'UUID of the room',
+    example: '123e4567-e89b-12d3-a456-426614174000',
   })
-  room: string;
+  roomId: string;
 
   @ApiProperty({
-    description: 'List of events in this room',
+    description: 'Name of the room',
+    example: 'Room 1',
+  })
+  roomName: string;
+
+  @ApiProperty({
+    description: 'Events in this room',
     type: [EventResponseDto],
   })
   events: EventResponseDto[];
 
   @ApiProperty({
-    description: 'Total events in this room',
-    example: 3,
+    description: 'Total number of events in this room',
+    example: 5,
   })
   totalEvents: number;
 
   @ApiProperty({
-    description: 'Active events in this room',
-    example: 2,
+    description: 'Number of active events in this room',
+    example: 3,
   })
   activeEvents: number;
+
+  @ApiProperty({
+    description: 'Number of currently active events in this room',
+    example: 1,
+  })
+  currentlyActiveEvents: number;
 }
 
 export class OccupancyReportResponseDto {
@@ -110,20 +170,26 @@ export class OccupancyReportResponseDto {
   rooms: OccupancyReportDto[];
 
   @ApiProperty({
-    description: 'Total rooms',
+    description: 'Total number of rooms',
     example: 3,
   })
   totalRooms: number;
 
   @ApiProperty({
-    description: 'Total events across all rooms',
-    example: 8,
+    description: 'Total number of events',
+    example: 15,
   })
   totalEvents: number;
 
   @ApiProperty({
-    description: 'Total active events',
-    example: 6,
+    description: 'Total number of active events',
+    example: 12,
   })
   totalActiveEvents: number;
+
+  @ApiProperty({
+    description: 'When the report was generated',
+    example: '2024-01-15T12:00:00Z',
+  })
+  generatedAt: Date;
 }

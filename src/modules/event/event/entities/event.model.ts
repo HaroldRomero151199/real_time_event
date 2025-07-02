@@ -1,37 +1,23 @@
-import {
-  IsNotEmpty,
-  IsString,
-  IsDateString,
-  ValidateIf,
-} from 'class-validator';
+// Event entity model with UUID primary key and Room relation
+// This model represents an event in the system with business logic methods
+// Uses roomId (UUID) to reference the Room entity
 
 export class Event {
-  id: string;
-
-  @IsNotEmpty({ message: 'Event name is required' })
-  @IsString({ message: 'Event name must be a string' })
+  id: string; // UUID primary key
   name: string;
-
-  @IsNotEmpty({ message: 'Room is required' })
-  @IsString({ message: 'Room must be a string' })
-  room: string;
-
-  @IsNotEmpty({ message: 'Start time is required' })
-  @IsDateString({}, { message: 'Start time must be a valid date' })
-  startTime: Date;
-
-  @IsNotEmpty({ message: 'End time is required' })
-  @IsDateString({}, { message: 'End time must be a valid date' })
-  @ValidateIf((o: Event) => !!(o.startTime && o.endTime))
-  endTime: Date;
-
+  roomId: string; // UUID foreign key to Room
+  room?: any; // Room relation (optional for queries)
+  // Dates are Date in model, string in DTO
+  startTime: Date; // ISO 8601 date
+  endTime: Date; // ISO 8601 date
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 
-  // Domain logic methods
+  // Business logic methods
   isOverlapping(otherEvent: Event): boolean {
-    if (this.room !== otherEvent.room) return false;
+    // Check if events overlap in the same room
+    if (this.roomId !== otherEvent.roomId) return false;
 
     return (
       (this.startTime < otherEvent.endTime &&
@@ -43,7 +29,21 @@ export class Event {
 
   isActiveInTimeRange(startRange: Date, endRange: Date): boolean {
     return (
-      this.isActive && this.startTime <= endRange && this.endTime >= startRange
+      this.isActive &&
+      ((this.startTime >= startRange && this.startTime < endRange) ||
+        (this.endTime > startRange && this.endTime <= endRange) ||
+        (this.startTime <= startRange && this.endTime >= endRange))
+    );
+  }
+
+  isCurrentlyActive(): boolean {
+    const now = new Date();
+    return this.isActive && this.startTime <= now && this.endTime > now;
+  }
+
+  getDurationInMinutes(): number {
+    return Math.floor(
+      (this.endTime.getTime() - this.startTime.getTime()) / (1000 * 60),
     );
   }
 

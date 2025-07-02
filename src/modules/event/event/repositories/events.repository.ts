@@ -1,7 +1,12 @@
+// Events repository implementation with UUID support and Room relations
+// Handles database operations for events using Prisma ORM
+// Uses roomId (UUID) to reference Room entities
+
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Event } from '../entities/event.model';
 import { IEventRepository } from './event-repository.interface';
+import { Event as PrismaEvent, Room } from '@prisma/client';
 
 @Injectable()
 export class EventPrismaRepository implements IEventRepository {
@@ -11,35 +16,47 @@ export class EventPrismaRepository implements IEventRepository {
     const result = await this.prisma.event.create({
       data: {
         name: event.name,
-        room: event.room,
+        roomId: event.roomId,
         startTime: event.startTime,
         endTime: event.endTime,
         isActive: event.isActive,
       },
+      include: {
+        room: true,
+      },
     });
-    return result as unknown as Event;
+    return this.mapToEventModel(result);
   }
 
   async findById(id: string): Promise<Event | null> {
     const result = await this.prisma.event.findUnique({
       where: { id },
     });
-    return result as Event | null;
+    return result ? this.mapToEventModel(result) : null;
   }
 
   async findByName(name: string): Promise<Event | null> {
     const result = await this.prisma.event.findUnique({
       where: { name },
+      include: {
+        room: true,
+      },
     });
-    return result as Event | null;
+    return result ? this.mapToEventModel(result) : null;
   }
 
-  async findByRoom(room: string): Promise<Event[]> {
+  async findByRoom(roomId: string): Promise<Event[]> {
     const results = await this.prisma.event.findMany({
-      where: { room },
+      where: {
+        roomId: roomId,
+        isActive: true,
+      },
+      include: {
+        room: true,
+      },
       orderBy: { startTime: 'asc' },
     });
-    return results as Event[];
+    return results.map((event) => this.mapToEventModel(event));
   }
 
   async findActiveInTimeRange(
@@ -56,41 +73,60 @@ export class EventPrismaRepository implements IEventRepository {
       },
       orderBy: { startTime: 'asc' },
     });
-    return results as Event[];
+    return results.map((event) => this.mapToEventModel(event));
   }
 
   async findOverlappingEvents(
-    room: string,
+    roomId: string,
     startTime: Date,
     endTime: Date,
   ): Promise<Event[]> {
     const results = await this.prisma.event.findMany({
       where: {
-        room,
+        roomId: roomId,
         isActive: true,
         AND: [
           {
-            startTime: {
-              lt: endTime,
-            },
-          },
-          {
-            endTime: {
-              gt: startTime,
-            },
+            OR: [
+              {
+                startTime: {
+                  gte: startTime,
+                  lt: endTime,
+                },
+              },
+              {
+                endTime: {
+                  gt: startTime,
+                  lte: endTime,
+                },
+              },
+              {
+                startTime: {
+                  lte: startTime,
+                },
+                endTime: {
+                  gte: endTime,
+                },
+              },
+            ],
           },
         ],
       },
-      orderBy: { startTime: 'asc' },
+      include: {
+        room: true,
+      },
     });
-    return results as Event[];
+    return results.map((event) => this.mapToEventModel(event));
   }
 
   async findAll(): Promise<Event[]> {
     const results = await this.prisma.event.findMany({
+      include: {
+        room: true,
+      },
       orderBy: { startTime: 'asc' },
     });
-    return results as Event[];
+    return results.map((event) => this.mapToEventModel(event));
   }
 
   async delete(id: string): Promise<void> {
@@ -104,12 +140,30 @@ export class EventPrismaRepository implements IEventRepository {
       where: { id: event.id },
       data: {
         name: event.name,
-        room: event.room,
+        roomId: event.roomId,
         startTime: event.startTime,
         endTime: event.endTime,
         isActive: event.isActive,
+        updatedAt: new Date(),
+      },
+      include: {
+        room: true,
       },
     });
-    return result as unknown as Event;
+    return this.mapToEventModel(result);
+  }
+
+  private mapToEventModel(eventData: PrismaEvent & { room?: Room }): Event {
+    const event = new Event();
+    event.id = eventData.id;
+    event.name = eventData.name;
+    event.roomId = eventData.roomId;
+    event.room = eventData.room;
+    event.startTime = eventData.startTime;
+    event.endTime = eventData.endTime;
+    event.isActive = eventData.isActive;
+    event.createdAt = eventData.createdAt;
+    event.updatedAt = eventData.updatedAt;
+    return event;
   }
 }

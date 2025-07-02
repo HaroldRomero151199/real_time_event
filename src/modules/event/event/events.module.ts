@@ -4,9 +4,10 @@ import { EventsService } from './services/events.service';
 import { EventPrismaRepository } from './repositories/events.repository';
 import { PrismaService } from './prisma/prisma.service';
 import { EVENT_REPOSITORY } from './tokens';
+import { RoomModule } from '../room/room.module';
 
 @Module({
-  imports: [],
+  imports: [RoomModule],
   controllers: [EventsController],
   providers: [
     EventsService,

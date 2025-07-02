@@ -1,3 +1,7 @@
+// Events controller with UUID support and Room relations
+// Handles HTTP requests for event management operations
+// Maps responses to include roomId (UUID) and room information
+
 import {
   Controller,
   Get,
@@ -17,16 +21,41 @@ import {
   ApiResponse,
   ApiParam,
   ApiBody,
+  getSchemaPath,
 } from '@nestjs/swagger';
 
 import { EventsService } from '../services/events.service';
 import { CreateEventDto } from '../dtos/create-event.dto';
 import { QueryEventsDto } from '../dtos/query-events.dto';
+
 import {
   EventResponseDto,
   EventsQueryResponseDto,
   OccupancyReportResponseDto,
+  RoomResponseDto,
 } from '../dtos/event-response.dto';
+import { ResponseWrapperDto } from '../../../../common/dtos/response-wrapper.dto';
+
+interface EventData {
+  id: string;
+  name: string;
+  roomId: string; // Use roomId (UUID)
+  room?: RoomData; // Room relation
+  startTime: Date;
+  endTime: Date;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  getDurationInMinutes?: () => number;
+  isCurrentlyActive?: () => boolean;
+}
+
+interface RoomData {
+  id: string;
+  name: string;
+  capacity: number;
+  isActive: boolean;
+}
 
 @ApiTags('Events Management')
 @Controller('v1/events')
@@ -44,7 +73,16 @@ export class EventsController {
   @ApiResponse({
     status: 201,
     description: 'Event created successfully',
-    type: EventResponseDto,
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ResponseWrapperDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(EventResponseDto) },
+          },
+        },
+      ],
+    },
   })
   @ApiResponse({
     status: 400,
@@ -71,7 +109,16 @@ export class EventsController {
   @ApiResponse({
     status: 200,
     description: 'Events found successfully',
-    type: EventsQueryResponseDto,
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ResponseWrapperDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(EventsQueryResponseDto) },
+          },
+        },
+      ],
+    },
   })
   @ApiResponse({
     status: 400,
@@ -104,7 +151,16 @@ export class EventsController {
   @ApiResponse({
     status: 200,
     description: 'Event cancelled successfully',
-    type: EventResponseDto,
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ResponseWrapperDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(EventResponseDto) },
+          },
+        },
+      ],
+    },
   })
   @ApiResponse({
     status: 404,
@@ -130,7 +186,16 @@ export class EventsController {
   @ApiResponse({
     status: 200,
     description: 'Occupancy report generated successfully',
-    type: OccupancyReportResponseDto,
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ResponseWrapperDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(OccupancyReportResponseDto) },
+          },
+        },
+      ],
+    },
   })
   async generateOccupancyReport(): Promise<OccupancyReportResponseDto> {
     const report = await this.eventsService.generateOccupancyReport();
@@ -138,22 +203,80 @@ export class EventsController {
     return {
       ...report,
       rooms: report.rooms.map((room) => ({
-        ...room,
-        events: room.events.map((event) => this.mapToEventResponse(event)),
+        roomId: room.roomId,
+        roomName: room.roomName,
+        events: room.events.map((event) => ({
+          id: event.id,
+          name: event.name,
+          roomId: event.roomId,
+          room: event.room,
+          startTime: event.startTime,
+          endTime: event.endTime,
+          isActive: event.isActive,
+          createdAt: event.createdAt,
+          updatedAt: event.updatedAt,
+        })),
+        totalEvents: room.totalEvents,
+        activeEvents: room.activeEvents,
+        currentlyActiveEvents: room.currentlyActiveEvents,
       })),
     };
   }
 
-  private mapToEventResponse(event: any): EventResponseDto {
+  // Additional endpoints for extensibility
+  @Get('currently-active')
+  @ApiOperation({
+    summary: 'Get currently active events',
+    description: 'Get all events that are currently happening',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Currently active events retrieved successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ResponseWrapperDto) },
+        {
+          properties: {
+            data: {
+              type: 'array',
+              items: { $ref: getSchemaPath(EventResponseDto) },
+            },
+          },
+        },
+      ],
+    },
+  })
+  async getCurrentlyActiveEvents(): Promise<EventResponseDto[]> {
+    const events = await this.eventsService.getCurrentlyActiveEvents();
+    return events.map((event) => this.mapToEventResponse(event));
+  }
+
+  private mapToEventResponse(event: EventData): EventResponseDto {
     return {
       id: event.id,
       name: event.name,
-      room: event.room,
-      startTime: event.startTime,
-      endTime: event.endTime,
+      roomId: event.roomId,
+      startTime: event.startTime instanceof Date ? event.startTime.toISOString() : event.startTime,
+      endTime: event.endTime instanceof Date ? event.endTime.toISOString() : event.endTime,
+      createdAt: event.createdAt instanceof Date ? event.createdAt.toISOString() : event.createdAt,
+      updatedAt: event.updatedAt instanceof Date ? event.updatedAt.toISOString() : event.updatedAt,
       isActive: event.isActive,
-      createdAt: event.createdAt,
-      updatedAt: event.updatedAt,
+      room: event.room,
+      durationInMinutes: event.getDurationInMinutes
+        ? event.getDurationInMinutes()
+        : undefined,
+      isCurrentlyActive: event.isCurrentlyActive
+        ? event.isCurrentlyActive()
+        : undefined,
+    };
+  }
+
+  private mapToRoomResponse(room: RoomData): RoomResponseDto {
+    return {
+      id: room.id,
+      name: room.name,
+      capacity: room.capacity,
+      isActive: room.isActive,
     };
   }
 }
